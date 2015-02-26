@@ -3,30 +3,47 @@ var map = new google.maps.Map(document.getElementById('map-canvas'), {
     center: new google.maps.LatLng(55, 11),
     mapTypeId: google.maps.MapTypeId.ROADMAP
 });
-
+    
 function AppViewModel() {
     var self = this;
     self.location = ko.observable("Aggius");
-    self.quotaUser = ko.observable('quotaUser=mich');
     self.mapKey = ko.observable('&key=AIzaSyBVAy0aVHbQvQ6NRCQGAOBCFVSMzJOouYA');
     self.$canvasMap = document.getElementById('map-canvas');
-    //self.map = {};
+    self.geocoder = new google.maps.Geocoder();
+    self.map = new google.maps.Map(this.$canvasMap);
 
-    self.mapUrl = ko.computed(function() {
-        return 'https://www.google.com/maps/embed/v3/search?q=' + this.location() + this.mapKey();
+	self.mapUrl = ko.computed(function() {
+        return 'https://www.google.com/maps/embed/v1/search?q=' + this.location() + this.mapKey();
     }, this);
-
-    self.addMap = function(d, e) {
+    
+    self.searchMap = function(d, e) {
         if (e.keyCode==13) { //ENTER_KEY
             var mapOptions = {
               center: { lat: -34.397, lng: 150.644},
               zoom: 8
             };
             //this.map = new google.maps.Map(this.$canvasMap, mapOptions);
-            map = new google.maps.Map(this.$canvasMap, mapOptions);
+            map = new google.maps.Map(this.$canvasMap, mapOptions);;
         }
     }
+
+    self.addMap = function(d, e) {
+    
+      self.geocoder.geocode( { 'address': this.location() }, function(results, status) {
+        if (status == google.maps.GeocoderStatus.OK) {
+          map.setCenter(results[0].geometry.location);
+          var marker = new google.maps.Marker({
+              map: map,
+              position: results[0].geometry.location
+          });
+        } else {
+          alert("Geocode was not successful for the following reason: " + status);
+        }
+      });
+    }
 }
+// Geocoding request x milano:
+// http://maps.google.com/maps/api/geocode/json?address=milano&sensor=false
 /*
 ko.bindingHandlers.map = {
     init: function (element, valueAccessor, allBindingsAccessor, viewModel) {
