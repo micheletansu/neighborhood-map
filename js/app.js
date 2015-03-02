@@ -1,42 +1,45 @@
 var selectedMaps = [];
+var currentLocation = "amsterdam";
 
 function AppViewModel() {
     var self = this;
-    self.location = ko.observable("Aggius");
-	self.mapKey1 = ko.observable('&key=AIzaSyDYeZOsWrLE65cpwtgMjgMutO8pUXp-wMk');
-	self.mapKey2 = ko.observable('&key=AIzaSyBVAy0aVHbQvQ6NRCQGAOBCFVSMzJOouYA');
-    self.$canvasMap = document.getElementById('map-canvas');
+
+    self.selectedMaps = ko.observableArray(selectedMaps);
+    self.location = ko.observable(currentLocation);
+	self.mapKey1 = '&key=AIzaSyDYeZOsWrLE65cpwtgMjgMutO8pUXp-wMk';
+	//self.mapKey2 = '&key=AIzaSyBVAy0aVHbQvQ6NRCQGAOBCFVSMzJOouYA';
+
     self.geocoder = new google.maps.Geocoder();
-    self.map = new google.maps.Map(this.$canvasMap);
-    self.isAnyLocationSelected = ko.observable(false);
     self.mapUrl = ko.computed(function() {
-        return 'https://www.google.com/maps/embed/v1/search?q=' + this.location() + this.mapKey1();
+        return 'https://www.google.com/maps/embed/v1/search?q=' + this.location() + this.mapKey1;
     }, self);
+    self.$leftBar = document.getElementsByClassName('rightBar')[0];
     
+    // Metodo sollevato all'invio nell'input di ricerca'
     self.searchMap = function(d, e) {
         if (e.keyCode==13) { //ENTER_KEY
         }
     }
 
+	// Aggiunge una mappa con un maker relativa alla mappa nella sezione principale
     self.addMap = function(d, e) {
-
-      if (self.isAnyLocationSelected()==false) {
-      	self.isAnyLocationSelected(true);
-      }
+      var $selectedMapDiv = document.createElement('div');
+      $selectedMapDiv.id = 'sel-map'+self.selectedMaps().length;
+      $selectedMapDiv.className = 'sel-map';
+      self.$leftBar.appendChild($selectedMapDiv);
         
       self.geocoder.geocode( { 'address': this.location() }, function(results, status) {
         if (status == google.maps.GeocoderStatus.OK) {
           var coord = results[0].geometry.location;
-          self.map = new google.maps.Map(document.getElementById("map-canvas"), {
+          var map = new google.maps.Map($selectedMapDiv, {
             zoom: 8, center: coord
           });
           var marker = new google.maps.Marker({
-            map: self.map, position: coord
+            map: map, position: coord
           });
-          selectedMaps.push(self.map);
-        } else {
-          alert("Geocode was not successful for the following reason: " + status);
-        }
+          self.selectedMaps.push(map);
+
+        } else { alert("Geocode was not successful for the following reason: " + status); }
       });
     }
 }
