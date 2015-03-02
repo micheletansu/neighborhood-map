@@ -3,13 +3,14 @@ var selectedMaps = [];
 function AppViewModel() {
     var self = this;
     self.location = ko.observable("Aggius");
-    self.mapKey = ko.observable('&key=AIzaSyBVAy0aVHbQvQ6NRCQGAOBCFVSMzJOouYA');
+	self.mapKey1 = ko.observable('&key=AIzaSyDYeZOsWrLE65cpwtgMjgMutO8pUXp-wMk');
+	self.mapKey2 = ko.observable('&key=AIzaSyBVAy0aVHbQvQ6NRCQGAOBCFVSMzJOouYA');
     self.$canvasMap = document.getElementById('map-canvas');
     self.geocoder = new google.maps.Geocoder();
     self.map = new google.maps.Map(this.$canvasMap);
     self.isAnyLocationSelected = ko.observable(false);
     self.mapUrl = ko.computed(function() {
-        return 'https://www.google.com/maps/embed/v1/search?q=' + this.location() + this.mapKey();
+        return 'https://www.google.com/maps/embed/v1/search?q=' + this.location() + this.mapKey1();
     }, self);
     
     self.searchMap = function(d, e) {
