@@ -24,6 +24,7 @@ div.sel-info {
 	width: 400px;
 	float: left; 
 	display: block;
+	padding: 10px;
 }
 div.clear-div {
 	clear: both;

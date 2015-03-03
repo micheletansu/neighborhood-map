@@ -17,7 +17,17 @@
         <iframe id="mainMap" width="800" height="600" frameborder="0" style="border:0" data-bind="attr: {src: mapUrl}"></iframe>
     </div>
 
-    <div class="rightBar">
+    <div class="rightBar" data-bind="foreach: selectedMaps">
+    	<div class="box-sel">
+    		<div class="sel-map" data-bind="googlemap: { latitude: geometry.location.k, longitude: geometry.location.D }"></div>
+    		<div class="sel-info">
+    			<pre data-bind="text: formatted_address"></pre>
+				<pre data-bind="text: geometry.location.k"></pre>
+    			<pre data-bind="text: geometry.location.D"></pre>
+    			<button data-bind="click: $parent.removeMap">remove</button>
+    		</div>
+    		<div class="clear-div"></div>
+    	</div>
 	</div>
     
     <script src="js/lib/knockout-3.3.0.js"></script>

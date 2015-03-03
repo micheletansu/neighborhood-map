@@ -1,31 +1,36 @@
 var model = {
-	currentLocation: null,
-	selectedMaps: [],
-
 	init: function() {
 		if (!localStorage.selectedMaps) {
 			localStorage.selectedMaps = JSON.stringify([]);
 			localStorage.currentLocation = JSON.stringify("Bonifacio");
-		} else {
-			this.currentLocation = this.getCurrentLocation();
-			this.selectedMaps = this.getAllMaps();
 		}
 	},
 	addResult: function(obj) {
 		var data = JSON.parse(localStorage.selectedMaps);
 		data.push(obj);
 		localStorage.selectedMaps = JSON.stringify(data);
-		this.selectedMaps = this.getAllMaps();
 	},
-	getAllMaps: function() {
+	removeResult: function(obj) {
+		var data = JSON.parse(localStorage.selectedMaps);
+		var index = -1;
+		data.forEach(function(v, i) {
+		   if (this.place_id==v.place_id) 
+		   		index=i;
+		}, obj); 
+		if (index > -1)
+			data.splice(index, 1);
+			
+		localStorage.selectedMaps = JSON.stringify(data);
+	},
+	getAllResults: function() {
 		return JSON.parse(localStorage.selectedMaps);
 	},
+
 	getCurrentLocation: function() {
 		return JSON.parse(localStorage.currentLocation);
 	},
 	setCurrentLocation: function(loc) {
 		localStorage.currentLocation = JSON.stringify(loc);
-		this.currentLocation = loc;
 	}
 };
 
@@ -33,11 +38,10 @@ function AppViewModel() {
     var self = this;
     model.init();
     
-    
     self.mapKey1 = '&key=AIzaSyDYeZOsWrLE65cpwtgMjgMutO8pUXp-wMk';
 	//self.mapKey2 = '&key=AIzaSyBVAy0aVHbQvQ6NRCQGAOBCFVSMzJOouYA';
-    self.selectedMaps = ko.observableArray(model.selectedMaps);
-    self.location = ko.observable(model.currentLocation);
+    self.selectedMaps = ko.observableArray(model.getAllResults());
+    self.location = ko.observable(model.getCurrentLocation());
 
     self.mapUrl = ko.computed(function() {
         return 'https://www.google.com/maps/embed/v1/search?q=' + self.location() + self.mapKey1;
@@ -57,17 +61,42 @@ function AppViewModel() {
         if (status == google.maps.GeocoderStatus.OK) {
           
           model.addResult(results[0]);
-		  selectedListView.add(results[0]);
+          self.selectedMaps.push(results[0]);
 		  
         } else { alert("Geocode was not successful for the following reason: " + status); }
       });
     }
 
-    selectedListView.init(self.selectedMaps);
+    self.removeMap = function(data, e) {
+    	model.removeResult(data);
+    	self.selectedMaps.remove(data);
+    }
 };
 // Geocoding request x milano:
 // http://maps.google.com/maps/api/geocode/json?address=milano&sensor=false
 
+ko.bindingHandlers.googlemap = {
+	init: function (element, valueAccessor) {
+		var value = valueAccessor();
+		var	latLng = new google.maps.LatLng(value.latitude, value.longitude);
+		var	mapOptions = {
+			zoom: 8,
+			center: latLng,
+			mapTypeId: google.maps.MapTypeId.ROADMAP
+		};
+		var	map = new google.maps.Map(element, mapOptions);
+		var	marker = new google.maps.Marker({
+			position: latLng,
+			map: map
+		});
+	}
+}
+
+ko.applyBindings(new AppViewModel());
+
+
+
+/* Before I built HTML elements from here:
 var selectedListView = {
 	$leftBar: null,
 	
@@ -78,12 +107,13 @@ var selectedListView = {
 	},
 
 	add: function(result) {
+
 	  var $boxDiv = document.createElement('div');
       $boxDiv.className = 'box-sel';
       this.$leftBar.appendChild($boxDiv);
 
       var $selectedMapDiv = document.createElement('div');
-      $selectedMapDiv.id = 'sel-map'+model.getAllMaps.length;
+      $selectedMapDiv.id = 'sel-map'+model.getAllResults.length;
       $selectedMapDiv.className = 'sel-map';
       $boxDiv.appendChild($selectedMapDiv);
 
@@ -95,8 +125,12 @@ var selectedListView = {
       var $clearDiv = document.createElement('div');
       $clearDiv.className = 'clear-div';
       $boxDiv.appendChild($clearDiv);
+      
 
-	  var coord = new google.maps.LatLng(parseFloat(result.geometry.location.k),parseFloat(result.geometry.location.D));
+	  var coord = new google.maps.LatLng(
+			parseFloat(result.geometry.location.k),
+			parseFloat(result.geometry.location.D)
+	  );
 	  var map = new google.maps.Map($selectedMapDiv, {
 		zoom: 8, center: coord
 	  });
@@ -104,7 +138,4 @@ var selectedListView = {
 		map: map, position: coord
 	  });
 	}
-};
-
-
-ko.applyBindings(new AppViewModel());
+};*/
